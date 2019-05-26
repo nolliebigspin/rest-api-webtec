@@ -22,12 +22,23 @@ app.use('/', router);
 
 app.post('/users', (req, res) => {
 	let users = req.body;
+	let users_ok = [];
+	let users_error = [];
+
+	// TODO: Error handling if no users given, users is not an array
+	// --> users.forEach throws error
+
 	users.forEach(user => {
+		console.log("user add: " + user);
 		ds.insert(user)
-		console.log("Post was Successful!")
-		.catch(err => console.log(err));
+			.then(ok => users_ok.push(ok))
+			.catch(err => users_error.push(err));
 	});
 
+	res.send({
+		"ok": users_ok,
+		"error": users_error
+	})
 });
 
 app.get('/users', (req, res) => {
