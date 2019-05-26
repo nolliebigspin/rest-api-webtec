@@ -23,7 +23,9 @@ app.use('/', router);
 app.post('/users', (req, res) => {
 	let users = req.body;
 	users.forEach(user => {
-		ds.insert(user).catch(err => console.log(err));
+		ds.insert(user)
+		console.log("Post was Successful!")
+		.catch(err => console.log(err));
 	});
 
 });
