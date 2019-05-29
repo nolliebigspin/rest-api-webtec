@@ -2,14 +2,13 @@ var express = require('express');
 var app = express();
 var path = require('path');
 var router = express.Router();
-var nedb = require('nedb-promises'),
-	ds = nedb.create({
+var nedb = require('nedb-promises')
+var	ds = nedb.create({
 		filename: 'data/users.db',
 		autoload: true
 	});
 
 
-app.set('port', process.env.PORT || 3000);
 app.listen(3000, function () {
 	console.log('Server is running on port 3000');
 });
@@ -21,31 +20,16 @@ app.use('/assets', express.static(__dirname + '/assets'));
 app.use('/', router);
 
 app.post('/users', (req, res) => {
-	let users = req.body;
-	let users_ok = [];
-	let users_error = [];
-
-	// TODO: Error handling if no users given, users is not an array
-	// --> users.forEach throws error
-
-	users.forEach(user => {
-		console.log("user add: " + user);
-		ds.insert(user)
-			.then(ok => users_ok.push(ok))
-			.catch(err => users_error.push(err));
-	});
-
-	res.send({
-		"ok": users_ok,
-		"error": users_error
-	})
+    let users = req.body;
+	ds.insert(users).catch( err => console.log(err));
+	res.send('OK');
 });
 
 app.get('/users', (req, res) => {
 	ds.find()
 		.then(user => {
 			res.send(user);
-			console.log('Successful!');
+			console.log('GET Successful!');
 		})
 		.catch(err => {
 			console.log(err);
@@ -53,12 +37,12 @@ app.get('/users', (req, res) => {
 });
 
 app.get('/users/:user_id', (req, res) => {
-	let userId = req.params.user_id;
-	userId = parseInt(user_id);
+	let user_id = req.params.user_id;
+	user_id = parseInt(user_id);
 	ds.find({ id: user_id })
 		.then(user => {
 			res.send(user);
-			console.log('Successful!');
+			console.log('GET Successful!');
 		})
 		.catch(err => {
 			console.log(err);
@@ -66,15 +50,22 @@ app.get('/users/:user_id', (req, res) => {
 });
 
 app.delete('/users/:user_id', (req, res) => {
-	let userId = req.params.user_id;
-	userId = parseInt(user_id);
+	let user_id = req.params.user_id;
+	user_id = parseInt(user_id);
 	console.log(user_id + ' removed!')
-	ds.remove({ id: user_id }).catch(err => console.log(err));
+	ds.remove({ id: user_id })
+		.then(res.send('OK'))
+		.catch(err => console.log(err));
 });
 
 app.put('/users/:user_id', (req, res) => {
-	let userId = req.params.user_id;
-	userId = parseInt(user_id);
+	let user_id = req.params.user_id;
+	user_id = parseInt(user_id);
 	console.log(user_id + ' added!');
-	ds.update({ id: user_id }, { $set: { name: req.body.name } }).catch(err => console.log(err));
+	ds.update(
+		{ id: user_id },
+		{ $set: { name: req.body.name } }
+	)
+	.then(res.send('OK'))
+	.catch(err => console.log(err));
 });
